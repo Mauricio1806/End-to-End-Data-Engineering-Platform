@@ -1,0 +1,19 @@
+﻿version: 2
+
+models:
+  - name: fct_stock_prices
+    description: "Fact table de precos diarios do mercado americano"
+    columns:
+      - name: ticker_symbol
+        tests: [not_null]
+      - name: trade_date
+        tests: [not_null]
+      - name: close_price
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: trend_signal
+        tests:
+          - accepted_values:
+              values: ['bullish', 'bearish', 'neutral']

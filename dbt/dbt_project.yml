@@ -1,0 +1,28 @@
+﻿name: de_portfolio
+version: "1.0.0"
+config-version: 2
+profile: de_portfolio
+model-paths: ["models"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  run_date: "{{ run_started_at.strftime('%Y-%m-%d') }}"
+
+models:
+  de_portfolio:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: ephemeral
+    marts:
+      +materialized: table
+      +schema: marts
+      fct_stock_prices:
+        +materialized: incremental
+        +unique_key: ["ticker_symbol", "trade_date"]
+        +incremental_strategy: merge
