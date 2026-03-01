@@ -1,0 +1,319 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Apex Research — Equity Desk</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg0:#07080a;--bg1:#0c0f13;--bg2:#111519;--bg3:#171c22;--line:#1e262f;--line2:#28323d;--green:#00c97a;--green-bg:rgba(0,201,122,.1);--green-bd:rgba(0,201,122,.22);--red:#e8334a;--red-bg:rgba(232,51,74,.1);--red-bd:rgba(232,51,74,.22);--blue:#3d9cf5;--amber:#f0a530;--purple:#9b72f5;--t0:#edf2f7;--t1:#7d95ab;--t2:#3d5060;--t3:#243038;--mono:"IBM Plex Mono",monospace;--sans:"IBM Plex Sans",sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg0);color:var(--t0);font-family:var(--mono);font-size:12px;line-height:1.5;min-height:100vh}
+.topbar{height:42px;background:var(--bg1);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:200}
+.brand{font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:.04em}.brand em{color:var(--green);font-style:normal;font-weight:300}
+.topbar-r{display:flex;align-items:center;gap:14px;font-size:10px;color:var(--t2)}
+.dot-live{display:flex;align-items:center;gap:5px;color:var(--green)}
+.dot-live::before{content:"";width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.tape{height:28px;background:var(--bg1);border-bottom:1px solid var(--line);overflow:hidden}
+.tape-inner{display:inline-flex;gap:28px;white-space:nowrap;animation:scroll 32s linear infinite;padding:5px 0}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ti{display:inline-flex;align-items:center;gap:7px;font-size:10px}
+.ti-s{color:var(--t0);font-weight:500}.ti-p{color:var(--t1)}.ti-c{font-weight:600}
+.ti-c.u{color:var(--green)}.ti-c.d{color:var(--red)}
+.layout{display:grid;grid-template-columns:240px 1fr 264px;height:calc(100vh - 70px)}
+aside{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+.plabel{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--t2);padding:10px 14px 7px;border-bottom:1px solid var(--line);background:var(--bg1);position:sticky;top:0;z-index:10}
+.wl{border-right:1px solid var(--line);background:var(--bg1)}
+.wl-row{display:grid;grid-template-columns:1fr auto;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .1s;gap:8px}
+.wl-row:hover{background:var(--bg2)}.wl-row.on{background:var(--bg3);border-left:2px solid var(--green)}
+.wl-tick{font-weight:500;font-size:13px;letter-spacing:.03em}.wl-name{font-size:9px;color:var(--t2);font-family:var(--sans);margin-top:1px}
+.wl-style{font-size:9px;margin-top:2px;letter-spacing:.06em}
+.wl-style.growth{color:var(--purple)}.wl-style.value{color:var(--amber)}.wl-style.blend{color:var(--blue)}
+.wl-r{text-align:right}.wl-price{font-size:12px;font-weight:500}.wl-chg{font-size:10px;font-weight:600;margin-top:1px}
+.wl-chg.u{color:var(--green)}.wl-chg.d{color:var(--red)}
+.main{background:var(--bg0);overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.sh{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.sh-ticker{font-family:var(--sans);font-size:30px;font-weight:700;letter-spacing:-.01em;line-height:1}
+.sh-name{font-family:var(--sans);font-size:12px;font-weight:300;color:var(--t1);margin-top:3px}
+.sh-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tag{font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--line2);color:var(--t1)}
+.tag.growth{border-color:rgba(155,114,245,.3);color:var(--purple);background:rgba(155,114,245,.07)}
+.tag.value{border-color:rgba(240,165,48,.3);color:var(--amber);background:rgba(240,165,48,.07)}
+.tag.blend{border-color:rgba(61,156,245,.3);color:var(--blue);background:rgba(61,156,245,.07)}
+.tag.bull{border-color:var(--green-bd);color:var(--green);background:var(--green-bg)}
+.tag.bear{border-color:var(--red-bd);color:var(--red);background:var(--red-bg)}
+.sh-price{font-family:var(--sans);font-size:34px;font-weight:300;letter-spacing:-.02em}
+.sh-chg{font-family:var(--sans);font-size:16px;font-weight:500;margin-top:2px}
+.sh-chg.u{color:var(--green)}.sh-chg.d{color:var(--red)}
+.metrics{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.mc{background:var(--bg1);padding:10px 12px}
+.mc-l{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--t2);margin-bottom:4px}
+.mc-v{font-family:var(--sans);font-size:15px;font-weight:500}
+.mc-v.u{color:var(--green)}.mc-v.d{color:var(--red)}.mc-v.hi{color:var(--amber)}
+.qbar-wrap{display:flex;align-items:center;gap:10px;margin-top:6px}
+.qbar-track{flex:1;height:4px;background:var(--bg3)}
+.qbar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.csec{background:var(--bg1);border:1px solid var(--line)}
+.csec-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--line)}
+.csec-title{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--t2)}
+.dtable{width:100%;border-collapse:collapse}
+.dtable th{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--t2);padding:7px 12px;border-bottom:1px solid var(--line);text-align:left;font-weight:400}
+.dtable td{padding:8px 12px;border-bottom:1px solid var(--line);color:var(--t1)}
+.dtable tr:hover td{background:var(--bg2)}.dtable tr:last-child td{border:none}
+.td0{color:var(--t0);font-weight:500}.tdu{color:var(--green);font-weight:600}.tdd{color:var(--red);font-weight:600}
+.bar-in{display:flex;align-items:center;gap:6px}.bit{flex:1;height:2px;background:var(--bg3)}
+.bif{height:100%;transition:width 1s ease}
+.rbar{border-left:1px solid var(--line);background:var(--bg1);display:flex;flex-direction:column}
+.mv-row{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line)}
+.mv-n{font-size:9px;color:var(--t3);text-align:right}.mv-t{font-size:11px;font-weight:500}
+.mv-s{font-size:9px;color:var(--t2);font-family:var(--sans)}.mv-p{font-size:11px;font-weight:600}
+.mv-p.u{color:var(--green)}.mv-p.d{color:var(--red)}
+.pipe-row{padding:10px 14px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:6px;align-items:start}
+.pipe-name{font-size:11px;font-weight:500;color:var(--t0)}.pipe-meta{font-size:9px;color:var(--t2);font-family:var(--sans);line-height:1.5;margin-top:2px}
+.badge{font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;font-weight:600;white-space:nowrap}
+.badge.ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.badge.run{background:rgba(61,156,245,.1);color:var(--blue);border:1px solid rgba(61,156,245,.25)}
+.footer-ds{margin-top:auto;padding:10px 14px;border-top:1px solid var(--line);font-size:9px;color:var(--t2);line-height:1.9}
+.footer-ds-l{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
+.loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--t2);font-size:11px;letter-spacing:.1em}
+</style>
+
+<script>
+window.__STATIC_DATA__ = {
+  snapshot:  [{"ticker": "AAPL", "date": "2026-02-26", "open": 274.95, "high": 276.11, "low": 270.8, "close": 272.95, "volume": 32292600, "trade_date": "2026-02-26", "daily_return_pct": -0.4668, "cumulative_return_pct": 119.2953, "year": 2026, "annual_return_pct": 0.8101, "ma_20d": 268.3103, "ma_50d": 265.394, "ma_200d": 242.2278, "volatility_20d": 31.5684, "volatility_252d": 32.3859, "bb_upper": 282.1059, "bb_lower": 254.5147, "bb_position": 0.6682, "trend_signal": "bullish", "vol_ma_20": 53809920.0, "vol_ratio": 0.6001, "dq_flag": "ok", "transformed_at": "2026-02-27T12:41:01.074411Z", "short_name": "Apple Inc.", "sector": "Technology", "equity_style": "Growth", "quality_score": 72.5, "trailing_pe": 34.594425, "market_cap_b": 4011.8, "trailing_eps": 7.89, "dividend_yield_pct": 38.0, "net_margin_pct": 27.04, "roe_pct": 152.02, "beta": 1.107, "gold_created_at": "2026-03-01T01:49:57.645550Z"}, {"ticker": "AMZN", "date": "2026-02-26", "open": 210.73, "high": 211.05, "low": 205.35, "close": 207.92, "volume": 47634600, "trade_date": "2026-02-26", "daily_return_pct": -1.2913, "cumulative_return_pct": 32.1747, "year": 2026, "annual_return_pct": -8.2031, "ma_20d": 215.003, "ma_50d": 226.8418, "ma_200d": 224.3395, "volatility_20d": 32.8478, "volatility_252d": 35.2369, "bb_upper": 245.4407, "bb_lower": 184.5653, "bb_position": 0.3836, "trend_signal": "neutral", "vol_ma_20": 64977065.0, "vol_ratio": 0.7331, "dq_flag": "ok", "transformed_at": "2026-02-27T12:41:02.581676Z", "short_name": "Amazon.com, Inc.", "sector": "Consumer Cyclical", "equity_style": "Blend", "quality_score": 42.4, "trailing_pe": 28.998604, "market_cap_b": 2232.0, "trailing_eps": 7.17, "dividend_yield_pct": 0.0, "net_margin_pct": 10.83, "roe_pct": 22.29, "beta": 1.385, "gold_created_at": "2026-03-01T01:49:57.645550Z"}, {"ticker": "BRK-B", "date": "2026-02-26", "open": 494.65, "high": 503.72, "low": 494.45, "close": 502.67, "volume": 4573600, "trade_date": "2026-02-26", "daily_return_pct": 1.7571, "cumulative_return_pct": 101.7054, "year": 2026, "annual_return_pct": 1.1714, "ma_20d": 496.65, "ma_50d": 495.5122, "ma_200d": 492.509, "volatility_20d": 15.5976, "volatility_252d": 18.12, "bb_upper": 512.091, "bb_lower": 481.209, "bb_position": 0.6949, "trend_signal": "bullish", "vol_ma_20": 4666540.0, "vol_ratio": 0.9801, "dq_flag": "ok", "transformed_at": "2026-02-27T12:41:03.927865Z", "short_name": "Berkshire Hathaway Inc. New", "sector": "Financial Services", "equity_style": "Blend", "quality_score": 47.5, "trailing_pe": 16.075151, "market_cap_b": 1084.43, "trailing_eps": 31.27, "dividend_yield_pct": 0.0, "net_margin_pct": 18.13, "roe_pct": 10.17, "beta": 0.702, "gold_created_at": "2026-03-01T01:49:57.645550Z"}, {"ticker": "GOOGL", "date": "2026-02-26", "open": 312.64, "high": 313.14, "low": 302.35, "close": 307.38, "volume": 36153600, "trade_date": "2026-02-26", "daily_return_pct": -1.7641, "cumulative_return_pct": 199.2785, "year": 2026, "annual_return_pct": -2.4655, "ma_20d": 319.0615, "ma_50d": 319.9128, "ma_200d": 248.6421, "volatility_20d": 24.3002, "volatility_252d": 31.0219, "bb_upper": 346.6168, "bb_lower": 291.5062, "bb_position": 0.288, "trend_signal": "neutral", "vol_ma_20": 41746765.0, "vol_ratio": 0.866, "dq_flag": "ok", "transformed_at": "2026-02-27T12:41:05.198384Z", "short_name": "Alphabet Inc.", "sector": "Communication Services", "equity_style": "Blend", "quality_score": 91.9, "trailing_pe": 28.408504, "market_cap_b": 3718.38, "trailing_eps": 10.82, "dividend_yield_pct": 27.0, "net_margin_pct": 32.81, "roe_pct": 35.71, "beta": 1.086, "gold_created_at": "2026-03-01T01:49:57.645550Z"}, {"ticker": "JNJ", "date": "2026-02-26", "open": 245.11, "high": 245.47, "low": 242.02, "close": 243.47, "volume": 7171900, "trade_date": "2026-02-26", "daily_return_pct": -0.6934, "cumulative_return_pct": 75.9803, "year": 2026, "annual_return_pct": 18.0441, "ma_20d": 238.675, "ma_50d": 222.0201, "ma_200d": 185.2071, "volatility_20d": 14.2714, "volatility_252d": 18.9969, "bb_upper": 251.3958, "bb_lower": 225.9542, "bb_position": 0.6885, "trend_signal": "bullish", "vol_ma_20": 9276390.0, "vol_ratio": 0.7731, "dq_flag": "ok", "transformed_at": "2026-02-27T12:41:06.452721Z", "short_name": "Johnson & Johnson", "sector": "Healthcare", "equity_style": "Blend", "quality_score": 63.2, "trailing_pe": 22.073437, "market_cap_b": 586.74, "trailing_eps": 11.03, "dividend_yield_pct": 214.0, "net_margin_pct": 28.46, "roe_pct": 35.03, "beta": 0.347, "gold_created_at": "2026-03-01T01:49:57.645550Z"}, {"ticker": "META", "date": "2026-02-26", "open": 650.55, "high": 661.0, "low": 647.5, "close": 657.01, "volume": 10611800, "trade_date": "2026-02-26", "daily_return_pct": 0.5079, "cumulative_return_pct": 149.745, "year": 2026, "annual_return_pct": 1.0147, "ma_20d": 666.4995, "ma_50d": 656.6834, "ma_200d": 690.5375, "volatility_20d": 47.4041, "volatility_252d": 39.6694, "bb_upper": 722.2841, "bb_lower": 610.7149, "bb_position": 0.4149, "trend_signal": "neutral", "vol_ma_20": 16151900.0, "vol_ratio": 0.657, "dq_flag": "ok", "transformed_at": "2026-02-27T12:41:07.831861Z", "short_name": "Meta Platforms, Inc.", "sector": "Communication Services", "equity_style": "Growth", "quality_score": 80.4, "trailing_pe": 27.9341, "market_cap_b": 1661.94, "trailing_eps": 23.52, "dividend_yield_pct": 32.0, "net_margin_pct": 30.08, "roe_pct": 30.24, "beta": 1.284, "gold_created_at": "2026-03-01T01:49:57.645550Z"}, {"ticker": "MSFT", "date": "2026-02-26", "open": 404.71, "high": 407.49, "low": 398.74, "close": 401.72, "volume": 34283500, "trade_date": "2026-02-26", "daily_return_pct": 0.2796, "cumulative_return_pct": 76.6904, "year": 2026, "annual_return_pct": -14.8651, "ma_20d": 404.8321, "ma_50d": 446.0853, "ma_200d": 484.0441, "volatility_20d": 46.4498, "volatility_252d": 26.5948, "bb_upper": 429.977, "bb_lower": 379.6872, "bb_position": 0.4381, "trend_signal": "bearish", "vol_ma_20": 46809490.0, "vol_ratio": 0.7324, "dq_flag": "ok", "transformed_at": "2026-02-27T12:41:09.134409Z", "short_name": "Microsoft Corporation", "sector": "Technology", "equity_style": "Blend", "quality_score": 84.0, "trailing_pe": 25.123203, "market_cap_b": 2985.73, "trailing_eps": 15.99, "dividend_yield_pct": 91.0, "net_margin_pct": 39.04, "roe_pct": 34.39, "beta": 1.084, "gold_created_at": "2026-03-01T01:49:57.645550Z"}, {"ticker": "NVDA", "date": "2026-02-26", "open": 194.27, "high": 194.29, "low": 184.32, "close": 184.89, "volume": 359342300, "trade_date": "2026-02-26", "daily_return_pct": -5.4561, "cumulative_return_pct": 1239.5011, "year": 2026, "annual_return_pct": -2.0969, "ma_20d": 186.7485, "ma_50d": 185.603, "ma_200d": 174.6749, "volatility_20d": 43.9035, "volatility_252d": 44.4271, "bb_upper": 198.6485, "bb_lower": 174.8485, "bb_position": 0.4219, "trend_signal": "neutral", "vol_ma_20": 189179840.0, "vol_ratio": 1.8995, "dq_flag": "ok", "transformed_at": "2026-02-27T12:41:10.480070Z", "short_name": "NVIDIA Corporation", "sector": "Technology", "equity_style": "Growth", "quality_score": 96.4, "trailing_pe": 45.651848, "market_cap_b": 4501.52, "trailing_eps": 4.05, "dividend_yield_pct": 2.0, "net_margin_pct": 55.6, "roe_pct": 101.48, "beta": 2.314, "gold_created_at": "2026-03-01T01:49:57.645550Z"}, {"ticker": "TSLA", "date": "2026-02-26", "open": 414.42, "high": 416.81, "low": 403.66, "close": 408.58, "volume": 53472200, "trade_date": "2026-02-26", "daily_return_pct": -2.1131, "cumulative_return_pct": 70.6137, "year": 2026, "annual_return_pct": -6.7318, "ma_20d": 414.5525, "ma_50d": 437.5952, "ma_200d": 390.2411, "volatility_20d": 35.5674, "volatility_252d": 60.7905, "bb_upper": 431.7288, "bb_lower": 397.3762, "bb_position": 0.3261, "trend_signal": "neutral", "vol_ma_20": 61538970.0, "vol_ratio": 0.8689, "dq_flag": "ok", "transformed_at": "2026-02-27T12:41:13.303425Z", "short_name": "Tesla, Inc.", "sector": "Consumer Cyclical", "equity_style": "Growth", "quality_score": 27.0, "trailing_pe": 385.45285, "market_cap_b": 1533.17, "trailing_eps": 1.06, "dividend_yield_pct": 0.0, "net_margin_pct": 4.0, "roe_pct": 4.93, "beta": 1.887, "gold_created_at": "2026-03-01T01:49:57.645550Z"}, {"ticker": "UNH", "date": "2026-02-26", "open": 286.98, "high": 295.26, "low": 285.23, "close": 286.66, "volume": 10204300, "trade_date": "2026-02-26", "daily_return_pct": 0.8656, "cumulative_return_pct": -7.0672, "year": 2026, "annual_return_pct": -14.786, "ma_20d": 282.9935, "ma_50d": 313.7502, "ma_200d": 313.2768, "volatility_20d": 32.6364, "volatility_252d": 50.8828, "bb_upper": 297.0521, "bb_lower": 268.9349, "bb_position": 0.6304, "trend_signal": "neutral", "vol_ma_20": 9512940.0, "vol_ratio": 1.0727, "dq_flag": "ok", "transformed_at": "2026-02-27T12:41:14.786631Z", "short_name": "UnitedHealth Group Incorporated", "sector": "Healthcare", "equity_style": "Blend", "quality_score": 19.2, "trailing_pe": 21.651058, "market_cap_b": 259.67, "trailing_eps": 13.24, "dividend_yield_pct": 308.0, "net_margin_pct": 2.69, "roe_pct": 12.54, "beta": 0.415, "gold_created_at": "2026-03-01T01:49:57.645550Z"}],
+  ranking:   [{"ticker": "NVDA", "short_name": "NVIDIA Corporation", "sector": "Technology", "industry": "Semiconductors", "country": "United States", "currency": "USD", "market_cap_b": 4501.52, "enterprise_value_b": 4441.68, "trailing_pe": 45.651848, "forward_pe": 17.435595, "price_to_book": 28.567675, "trailing_eps": 4.05, "forward_eps": 10.60417, "total_revenue_b": 215.94, "revenue_growth_pct": 73.2, "gross_margin_pct": 71.07, "operating_margin_pct": 65.02, "net_margin_pct": 55.6, "roe_pct": 101.48, "roa_pct": 51.19, "debt_to_equity": 7.255, "free_cashflow_b": 58.13, "dividend_yield_pct": 2.0, "beta": 2.314, "ev_to_ebitda": 33.338, "ev_to_revenue": 20.569, "equity_style": "Growth", "quality_score": 96.4, "transformed_at": "2026-02-27T12:41:11.252606Z", "sector_rank": 1, "overall_rank": 1, "pe_vs_sector": 31.96, "pe_vs_sector_label": "Expensive", "gold_created_at": "2026-03-01T01:49:57.580082Z"}, {"ticker": "GOOGL", "short_name": "Alphabet Inc.", "sector": "Communication Services", "industry": "Internet Content & Information", "country": "United States", "currency": "USD", "market_cap_b": 3718.38, "enterprise_value_b": 3658.53, "trailing_pe": 28.408504, "forward_pe": 22.909723, "price_to_book": 8.94769, "trailing_eps": 10.82, "forward_eps": 13.41701, "total_revenue_b": 402.84, "revenue_growth_pct": 18.0, "gross_margin_pct": 59.65, "operating_margin_pct": 31.57, "net_margin_pct": 32.81, "roe_pct": 35.71, "roa_pct": 15.43, "debt_to_equity": 16.133, "free_cashflow_b": 38.09, "dividend_yield_pct": 27.0, "beta": 1.086, "ev_to_ebitda": 24.362, "ev_to_revenue": 9.082, "equity_style": "Blend", "quality_score": 91.9, "transformed_at": "2026-02-27T12:41:05.945106Z", "sector_rank": 1, "overall_rank": 2, "pe_vs_sector": 0.84, "pe_vs_sector_label": "Fair", "gold_created_at": "2026-03-01T01:49:57.580082Z"}, {"ticker": "MSFT", "short_name": "Microsoft Corporation", "sector": "Technology", "industry": "Software - Infrastructure", "country": "United States", "currency": "USD", "market_cap_b": 2985.73, "enterprise_value_b": 3016.84, "trailing_pe": 25.123203, "forward_pe": 21.311869, "price_to_book": 7.6350846, "trailing_eps": 15.99, "forward_eps": 18.84959, "total_revenue_b": 305.45, "revenue_growth_pct": 16.7, "gross_margin_pct": 68.59, "operating_margin_pct": 47.09, "net_margin_pct": 39.04, "roe_pct": 34.39, "roa_pct": 14.86, "debt_to_equity": 31.539, "free_cashflow_b": 53.64, "dividend_yield_pct": 91.0, "beta": 1.084, "ev_to_ebitda": 17.214, "ev_to_revenue": 9.877, "equity_style": "Blend", "quality_score": 84.0, "transformed_at": "2026-02-27T12:41:09.923327Z", "sector_rank": 2, "overall_rank": 3, "pe_vs_sector": -27.38, "pe_vs_sector_label": "Cheap", "gold_created_at": "2026-03-01T01:49:57.580082Z"}, {"ticker": "META", "short_name": "Meta Platforms, Inc.", "sector": "Communication Services", "industry": "Internet Content & Information", "country": "United States", "currency": "USD", "market_cap_b": 1661.94, "enterprise_value_b": 1665.43, "trailing_pe": 27.9341, "forward_pe": 18.351723, "price_to_book": 7.6514845, "trailing_eps": 23.52, "forward_eps": 35.801, "total_revenue_b": 200.97, "revenue_growth_pct": 23.8, "gross_margin_pct": 82.0, "operating_margin_pct": 41.31, "net_margin_pct": 30.08, "roe_pct": 30.24, "roa_pct": 16.21, "debt_to_equity": 39.164, "free_cashflow_b": 23.43, "dividend_yield_pct": 32.0, "beta": 1.284, "ev_to_ebitda": 16.345, "ev_to_revenue": 8.287, "equity_style": "Growth", "quality_score": 80.4, "transformed_at": "2026-02-27T12:41:08.611410Z", "sector_rank": 2, "overall_rank": 4, "pe_vs_sector": -0.84, "pe_vs_sector_label": "Fair", "gold_created_at": "2026-03-01T01:49:57.580082Z"}, {"ticker": "AAPL", "short_name": "Apple Inc.", "sector": "Technology", "industry": "Consumer Electronics", "country": "United States", "currency": "USD", "market_cap_b": 4011.8, "enterprise_value_b": 4030.82, "trailing_pe": 34.594425, "forward_pe": 29.352085, "price_to_book": 45.506836, "trailing_eps": 7.89, "forward_eps": 9.29917, "total_revenue_b": 435.62, "revenue_growth_pct": 15.7, "gross_margin_pct": 47.33, "operating_margin_pct": 35.37, "net_margin_pct": 27.04, "roe_pct": 152.02, "roa_pct": 24.38, "debt_to_equity": 102.63, "free_cashflow_b": 106.31, "dividend_yield_pct": 38.0, "beta": 1.107, "ev_to_ebitda": 26.362, "ev_to_revenue": 9.253, "equity_style": "Growth", "quality_score": 72.5, "transformed_at": "2026-02-27T12:41:02.073144Z", "sector_rank": 3, "overall_rank": 5, "pe_vs_sector": 0.0, "pe_vs_sector_label": "Fair", "gold_created_at": "2026-03-01T01:49:57.580082Z"}, {"ticker": "JNJ", "short_name": "Johnson & Johnson", "sector": "Healthcare", "industry": "Drug Manufacturers - General", "country": "United States", "currency": "USD", "market_cap_b": 586.74, "enterprise_value_b": 615.97, "trailing_pe": 22.073437, "forward_pe": 19.412111, "price_to_book": 7.1894283, "trailing_eps": 11.03, "forward_eps": 12.54217, "total_revenue_b": 94.19, "revenue_growth_pct": 9.1, "gross_margin_pct": 68.08, "operating_margin_pct": 23.97, "net_margin_pct": 28.46, "roe_pct": 35.03, "roa_pct": 8.68, "debt_to_equity": 60.499, "free_cashflow_b": 16.63, "dividend_yield_pct": 214.0, "beta": 0.347, "ev_to_ebitda": 18.205, "ev_to_revenue": 6.539, "equity_style": "Blend", "quality_score": 63.2, "transformed_at": "2026-02-27T12:41:07.230554Z", "sector_rank": 1, "overall_rank": 6, "pe_vs_sector": 0.97, "pe_vs_sector_label": "Fair", "gold_created_at": "2026-03-01T01:49:57.580082Z"}, {"ticker": "BRK-B", "short_name": "Berkshire Hathaway Inc. New", "sector": "Financial Services", "industry": "Insurance - Diversified", "country": "United States", "currency": "USD", "market_cap_b": 1084.43, "enterprise_value_b": -251.42, "trailing_pe": 16.075151, "forward_pe": 20.866049, "price_to_book": 0.0010358471, "trailing_eps": 31.27, "forward_eps": 24.09033, "total_revenue_b": 372.13, "revenue_growth_pct": 2.1, "gross_margin_pct": 24.36, "operating_margin_pct": 41.1, "net_margin_pct": 18.13, "roe_pct": 10.17, "roa_pct": 4.78, "debt_to_equity": 18.166, "free_cashflow_b": 48.62, "dividend_yield_pct": 0.0, "beta": 0.702, "ev_to_ebitda": -2.421, "ev_to_revenue": -0.676, "equity_style": "Blend", "quality_score": 47.5, "transformed_at": "2026-02-27T12:41:04.673149Z", "sector_rank": 1, "overall_rank": 7, "pe_vs_sector": 0.0, "pe_vs_sector_label": "Fair", "gold_created_at": "2026-03-01T01:49:57.580082Z"}, {"ticker": "AMZN", "short_name": "Amazon.com, Inc.", "sector": "Consumer Cyclical", "industry": "Internet Retail", "country": "United States", "currency": "USD", "market_cap_b": 2232.0, "enterprise_value_b": 2287.52, "trailing_pe": 28.998604, "forward_pe": 22.265652, "price_to_book": 5.4278703, "trailing_eps": 7.17, "forward_eps": 9.33815, "total_revenue_b": 716.92, "revenue_growth_pct": 13.6, "gross_margin_pct": 50.29, "operating_margin_pct": 10.53, "net_margin_pct": 10.83, "roe_pct": 22.29, "roa_pct": 6.93, "debt_to_equity": 43.435, "free_cashflow_b": 23.79, "dividend_yield_pct": 0.0, "beta": 1.385, "ev_to_ebitda": 15.697, "ev_to_revenue": 3.191, "equity_style": "Blend", "quality_score": 42.4, "transformed_at": "2026-02-27T12:41:03.417103Z", "sector_rank": 1, "overall_rank": 8, "pe_vs_sector": -86.01, "pe_vs_sector_label": "Cheap", "gold_created_at": "2026-03-01T01:49:57.580082Z"}, {"ticker": "TSLA", "short_name": "Tesla, Inc.", "sector": "Consumer Cyclical", "industry": "Auto Manufacturers", "country": "United States", "currency": "USD", "market_cap_b": 1533.17, "enterprise_value_b": 1504.56, "trailing_pe": 385.45285, "forward_pe": 145.69662, "price_to_book": 18.659178, "trailing_eps": 1.06, "forward_eps": 2.80432, "total_revenue_b": 94.83, "revenue_growth_pct": -3.1, "gross_margin_pct": 18.03, "operating_margin_pct": 4.7, "net_margin_pct": 4.0, "roe_pct": 4.93, "roa_pct": 2.1, "debt_to_equity": 17.763, "free_cashflow_b": 3.73, "dividend_yield_pct": 0.0, "beta": 1.887, "ev_to_ebitda": 143.25, "ev_to_revenue": 15.866, "equity_style": "Growth", "quality_score": 27.0, "transformed_at": "2026-02-27T12:41:14.249223Z", "sector_rank": 2, "overall_rank": 9, "pe_vs_sector": 86.01, "pe_vs_sector_label": "Expensive", "gold_created_at": "2026-03-01T01:49:57.580082Z"}, {"ticker": "UNH", "short_name": "UnitedHealth Group Incorporated", "sector": "Healthcare", "industry": "Healthcare Plans", "country": "United States", "currency": "USD", "market_cap_b": 259.67, "enterprise_value_b": 312.74, "trailing_pe": 21.651058, "forward_pe": 14.314463, "price_to_book": 2.6062608, "trailing_eps": 13.24, "forward_eps": 20.0259, "total_revenue_b": 447.57, "revenue_growth_pct": 12.3, "gross_margin_pct": 18.53, "operating_margin_pct": 0.34, "net_margin_pct": 2.69, "roe_pct": 12.54, "roa_pct": 3.9, "debt_to_equity": 77.08, "free_cashflow_b": 15.93, "dividend_yield_pct": 308.0, "beta": 0.415, "ev_to_ebitda": 13.408, "ev_to_revenue": 0.699, "equity_style": "Blend", "quality_score": 19.2, "transformed_at": "2026-02-27T12:41:15.558261Z", "sector_rank": 2, "overall_rank": 10, "pe_vs_sector": -0.97, "pe_vs_sector_label": "Fair", "gold_created_at": "2026-03-01T01:49:57.580082Z"}],
+  sectors:   [{"sector": "Communication Services", "ticker_count": 2, "avg_pe": 28.17, "median_pe": 28.17, "avg_pb": 8.3, "avg_quality_score": 86.15, "avg_roe": 32.98, "avg_net_margin": 31.44, "avg_rev_growth": 20.9, "total_market_cap": 5380.32, "growth_count": 1, "value_count": 0, "gold_created_at": "2026-03-01T01:49:57.636721Z"}, {"sector": "Consumer Cyclical", "ticker_count": 2, "avg_pe": 207.23, "median_pe": 207.23, "avg_pb": 12.04, "avg_quality_score": 34.7, "avg_roe": 13.61, "avg_net_margin": 7.42, "avg_rev_growth": 5.25, "total_market_cap": 3765.17, "growth_count": 1, "value_count": 0, "gold_created_at": "2026-03-01T01:49:57.636721Z"}, {"sector": "Financial Services", "ticker_count": 1, "avg_pe": 16.08, "median_pe": 16.08, "avg_pb": 0.0, "avg_quality_score": 47.5, "avg_roe": 10.17, "avg_net_margin": 18.13, "avg_rev_growth": 2.1, "total_market_cap": 1084.43, "growth_count": 0, "value_count": 0, "gold_created_at": "2026-03-01T01:49:57.636721Z"}, {"sector": "Healthcare", "ticker_count": 2, "avg_pe": 21.86, "median_pe": 21.86, "avg_pb": 4.9, "avg_quality_score": 41.2, "avg_roe": 23.78, "avg_net_margin": 15.58, "avg_rev_growth": 10.7, "total_market_cap": 846.41, "growth_count": 0, "value_count": 0, "gold_created_at": "2026-03-01T01:49:57.636721Z"}, {"sector": "Technology", "ticker_count": 3, "avg_pe": 35.12, "median_pe": 34.59, "avg_pb": 27.24, "avg_quality_score": 84.3, "avg_roe": 95.96, "avg_net_margin": 40.56, "avg_rev_growth": 35.2, "total_market_cap": 11499.05, "growth_count": 2, "value_count": 0, "gold_created_at": "2026-03-01T01:49:57.636721Z"}],
+  generated: "2026-03-01 14:51 UTC"
+};
+</script>
+</head>
+<body>
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:20px">
+    <div class="brand">APEX<em>research</em></div>
+  </div>
+  <div class="topbar-r">
+    <span class="dot-live">LIVE DATA — AWS S3</span>
+    <span>|</span>
+    <span id="runDate">Loading...</span>
+    <span>|</span>
+    <span>10 equities · S&P 500</span>
+  </div>
+</div>
+<div class="tape"><div class="tape-inner" id="tape"><span style="color:var(--t2);padding:0 20px;font-size:10px">Loading market data...</span></div></div>
+<div class="layout">
+  <aside class="wl" id="wl"><div class="plabel">Coverage Universe</div><div class="loading">Loading...</div></aside>
+  <main class="main" id="main"><div class="loading">Loading data from S3...</div></main>
+  <aside class="rbar" id="rbar"><div class="plabel">Daily Movers</div><div class="loading">Loading...</div></aside>
+</div>
+
+<script>
+let SNAPSHOT = [], RANKING = [], SECTORS = [], current = null;
+
+async function load() {
+  try {
+    [SNAPSHOT, RANKING, SECTORS] = await Promise.all([
+      fetch("/api/snapshot").then(r=>r.json()),
+      fetch("/api/ranking").then(r=>r.json()),
+      fetch("/api/sectors").then(r=>r.json()),
+    ]);
+    if (SNAPSHOT.length) {
+      document.getElementById("runDate").textContent = "Snapshot: " + SNAPSHOT[0].date;
+      buildTape(); buildWL(); buildMovers(); buildRbar();
+      select(SNAPSHOT[0].ticker);
+    }
+  } catch(e) { console.error(e); }
+}
+
+function pct(v){ return v >= 0 ? `+${v.toFixed(2)}%` : `${v.toFixed(2)}%`; }
+function dir(v){ return v >= 0 ? "u" : "d"; }
+function arr(v){ return v >= 0 ? "▲" : "▼"; }
+
+function buildTape(){
+  const items = SNAPSHOT.map(s => {
+    const roe = s.roe_pct || 0;
+    return `<span class="ti"><span class="ti-s">${s.ticker}</span><span class="ti-p">${(s.close||0).toFixed(2)}</span><span class="ti-c ${dir(roe)}">${arr(roe)} ROE ${roe.toFixed(1)}%</span></span>`;
+  });
+  const t = items.join("") + items.join("");
+  document.getElementById("tape").innerHTML = t;
+}
+
+function buildWL(){
+  const el = document.getElementById("wl");
+  let html = '<div class="plabel">Coverage Universe</div>';
+  SNAPSHOT.forEach(s => {
+    const style = (s.equity_style||"blend").toLowerCase();
+    html += `<div class="wl-row" onclick="select('${s.ticker}')" id="wl-${s.ticker}">
+      <div>
+        <div class="wl-tick">${s.ticker}</div>
+        <div class="wl-name">${(s.sector||"").replace("Communication Services","Comm. Services")}</div>
+        <div class="wl-style ${style}">${style.toUpperCase()}</div>
+      </div>
+      <div class="wl-r">
+        <div class="wl-price">${(s.close||0).toFixed(2)}</div>
+        <div class="wl-chg ${dir(s.net_margin_pct||0)}">M ${(s.net_margin_pct||0).toFixed(1)}%</div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function buildMovers(){
+  const byRoe = [...SNAPSHOT].sort((a,b) => (b.roe_pct||0) - (a.roe_pct||0));
+  const top5 = byRoe.slice(0,5);
+  const bot5 = byRoe.slice(-5).reverse();
+  function rows(arr2, cls){
+    return arr2.map((s,i) => `<div class="mv-row">
+      <span class="mv-n">${i+1}</span>
+      <div><div class="mv-t">${s.ticker}</div><div class="mv-s">${(s.sector||"").split(" ")[0]}</div></div>
+      <span class="mv-p ${cls}">${(s.roe_pct||0).toFixed(1)}%</span>
+    </div>`).join("");
+  }
+  document.getElementById("rbar").innerHTML = `
+    <div class="plabel">ROE Ranking</div>
+    <div style="padding:6px 14px 3px;font-size:8px;letter-spacing:.12em;color:var(--t2);text-transform:uppercase">Top ROE</div>
+    ${rows(top5,"u")}
+    <div style="padding:6px 14px 3px;font-size:8px;letter-spacing:.12em;color:var(--t2);text-transform:uppercase;border-top:1px solid var(--line)">Bottom ROE</div>
+    ${rows(bot5,"d")}
+    <div class="plabel" style="margin-top:4px">Pipeline</div>
+    <div class="pipe-row"><div><div class="pipe-name">Bronze</div><div class="pipe-meta">yfinance · 5yr OHLCV<br>S3 raw/</div></div><span class="badge ok">done</span></div>
+    <div class="pipe-row"><div><div class="pipe-name">Silver</div><div class="pipe-meta">MA · BB · Fundamentals<br>Quality Score</div></div><span class="badge ok">done</span></div>
+    <div class="pipe-row"><div><div class="pipe-name">Gold</div><div class="pipe-meta">equity_ranking<br>sector_valuation</div></div><span class="badge ok">done</span></div>
+    <div class="pipe-row"><div><div class="pipe-name">AWS S3</div><div class="pipe-meta">projectalphav · us-east-1<br>Versioning enabled</div></div><span class="badge ok">active</span></div>
+    <div class="footer-ds"><div class="footer-ds-l">Stack</div><div>yfinance · boto3 · pandas</div><div>AWS S3 · Apache Airflow</div><div>Flask · PyArrow · Docker</div></div>
+  `;
+}
+
+function buildRbar(){ buildMovers(); }
+
+function select(ticker){
+  current = ticker;
+  document.querySelectorAll(".wl-row").forEach(r => r.classList.remove("on"));
+  const el = document.getElementById("wl-"+ticker);
+  if(el) el.classList.add("on");
+
+  const s = SNAPSHOT.find(x => x.ticker === ticker) || {};
+  const r = RANKING.find(x => x.ticker === ticker) || {};
+  const style = (s.equity_style||"blend").toLowerCase();
+  const quality = r.quality_score || 0;
+  const pe = r.trailing_pe || 0;
+  const npm = s.net_margin_pct || 0;
+  const roe = s.roe_pct || 0;
+  const beta = s.beta || 0;
+
+  const ql = quality >= 80 ? "High Quality — Strong fundamentals" :
+             quality >= 60 ? "Good Quality — Solid fundamentals" :
+             quality >= 40 ? "Average Quality — Mixed signals" :
+                             "Below Average — Weak fundamentals";
+
+  document.getElementById("main").innerHTML = `
+    <div class="sh">
+      <div>
+        <div class="sh-ticker">${ticker}</div>
+        <div class="sh-name">${s.sector||""} &middot; NYSE/NASDAQ</div>
+        <div class="sh-tags">
+          <span class="tag ${style}">${style.toUpperCase()}</span>
+          <span class="tag">P/E ${pe > 0 ? pe.toFixed(1)+"×" : "N/A"}</span>
+          <span class="tag">β ${beta.toFixed(3)}</span>
+          ${(s.dividend_yield_pct||0) > 0 ? `<span class="tag">Div ${(s.dividend_yield_pct||0).toFixed(2)}%</span>` : ""}
+          <span class="tag ${npm > 20 ? "bull" : npm < 5 ? "bear" : ""}">${npm > 20 ? "HIGH MARGIN" : npm < 5 ? "LOW MARGIN" : "MID MARGIN"}</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="sh-price">${(s.close||0).toFixed(2)}</div>
+        <div class="sh-chg ${dir(npm)}">Net Margin ${pct(npm)}</div>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="mc"><div class="mc-l">Open</div><div class="mc-v">${(s.open||0).toFixed(2)}</div></div>
+      <div class="mc"><div class="mc-l">High</div><div class="mc-v u">${(s.high||0).toFixed(2)}</div></div>
+      <div class="mc"><div class="mc-l">Low</div><div class="mc-v d">${(s.low||0).toFixed(2)}</div></div>
+      <div class="mc"><div class="mc-l">Net Margin</div><div class="mc-v ${npm > 20 ? "u" : ""}">${npm.toFixed(1)}%</div></div>
+      <div class="mc"><div class="mc-l">ROE</div><div class="mc-v ${roe > 30 ? "hi" : ""}">${roe.toFixed(1)}%</div></div>
+      <div class="mc"><div class="mc-l">Market Cap</div><div class="mc-v">$${(s.market_cap_b||0).toFixed(0)}B</div></div>
+      <div class="mc"><div class="mc-l">Beta</div><div class="mc-v ${beta > 1.5 ? "d" : ""}">${beta.toFixed(3)}</div></div>
+    </div>
+
+    <div class="csec">
+      <div class="csec-hd">
+        <span class="csec-title">Quality Score</span>
+        <span style="font-size:11px;font-weight:600;color:var(--t0)">${quality.toFixed(1)} / 100</span>
+      </div>
+      <div style="padding:12px 14px">
+        <div class="qbar-wrap">
+          <div class="qbar-track"><div class="qbar-fill" style="width:${quality}%"></div></div>
+          <span style="font-size:10px;color:var(--t1);white-space:nowrap">${ql}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="csec">
+      <div class="csec-hd">
+        <span class="csec-title">Equity Ranking — All Tickers</span>
+        <span class="csec-title">By Quality Score</span>
+      </div>
+      <table class="dtable">
+        <thead><tr>
+          <th>#</th><th>Ticker</th><th>Sector</th><th>Style</th>
+          <th>Quality</th><th>P/E</th><th>ROE</th><th>Net Margin</th><th>vs Sector</th>
+        </tr></thead>
+        <tbody>${RANKING.map((x,i) => `<tr style="${x.ticker===ticker?"background:var(--bg3)":""}">
+          <td class="td0">${i+1}</td>
+          <td class="td0" style="cursor:pointer;color:var(--green)" onclick="select('${x.ticker}')">${x.ticker}</td>
+          <td>${(x.sector||"").replace("Communication Services","Comm. Svc")}</td>
+          <td><span class="tag ${(x.equity_style||"").toLowerCase()}" style="font-size:8px">${x.equity_style||""}</span></td>
+          <td class="${x.quality_score>=80?"tdu":x.quality_score>=50?"td0":"tdd"}">${(x.quality_score||0).toFixed(1)}</td>
+          <td>${(x.trailing_pe||0).toFixed(1)}×</td>
+          <td class="${(x.roe_pct||0)>30?"tdu":""}">${(x.roe_pct||0).toFixed(1)}%</td>
+          <td class="${(x.net_margin_pct||0)>20?"tdu":""}">${(x.net_margin_pct||0).toFixed(1)}%</td>
+          <td class="${x.pe_vs_sector_label==="Cheap"?"tdu":x.pe_vs_sector_label==="Expensive"?"tdd":"td0"}">${x.pe_vs_sector_label||"N/A"}</td>
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>
+
+    <div class="csec">
+      <div class="csec-hd">
+        <span class="csec-title">Sector Valuation</span>
+        <span class="csec-title">Avg P/E · Quality · Rev Growth · Mkt Cap</span>
+      </div>
+      <table class="dtable">
+        <thead><tr><th>Sector</th><th>Tickers</th><th>Avg P/E</th><th>Quality</th><th>Rev Growth</th><th>Avg ROE</th><th>Mkt Cap $B</th><th>Bar</th></tr></thead>
+        <tbody>${SECTORS.sort((a,b)=>(b.total_market_cap||0)-(a.total_market_cap||0)).map(x => {
+          const maxCap = Math.max(...SECTORS.map(s=>s.total_market_cap||0));
+          const w = ((x.total_market_cap||0)/maxCap*100).toFixed(0);
+          const rg = x.avg_rev_growth||0;
+          return `<tr>
+            <td class="td0">${x.sector}</td>
+            <td>${x.ticker_count}</td>
+            <td class="${(x.avg_pe||0)>40?"tdd":(x.avg_pe||0)>20?"td0":"tdu"}">${(x.avg_pe||0).toFixed(1)}×</td>
+            <td class="td0">${(x.avg_quality_score||0).toFixed(1)}</td>
+            <td class="${rg>15?"tdu":rg>5?"td0":"tdd"}">${rg>0?"+":""}${rg.toFixed(1)}%</td>
+            <td class="td0">${(x.avg_roe||0).toFixed(1)}%</td>
+            <td class="td0">$${(x.total_market_cap||0).toLocaleString("en-US",{maximumFractionDigits:0})}B</td>
+            <td><div class="bar-in"><div class="bit"><div class="bif" style="width:${w}%;background:${rg>5?"#00c97a":"#e8334a"}"></div></div></div></td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+
+async function load() {
+  try {
+    SNAPSHOT = window.__STATIC_DATA__.snapshot;
+    RANKING  = window.__STATIC_DATA__.ranking;
+    SECTORS  = window.__STATIC_DATA__.sectors;
+    if (SNAPSHOT.length) {
+      document.getElementById("runDate").textContent = "Snapshot: " + SNAPSHOT[0].date + " (static)";
+      buildTape(); buildWL(); buildMovers(); buildRbar();
+      select(SNAPSHOT[0].ticker);
+    }
+  } catch(e) { console.error(e); }
+}
+load();
+
+</script>
+</body>
+</html>
