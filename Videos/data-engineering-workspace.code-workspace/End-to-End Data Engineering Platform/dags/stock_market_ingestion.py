@@ -1,60 +1,15 @@
-﻿"""
-dags/stock_market_ingestion.py
-Airflow DAG — Bronze / Silver / Gold pipeline using yfinance
-Schedule: weekdays at 23:00 UTC
-"""
-from __future__ import annotations
+﻿from __future__ import annotations
 from datetime import datetime, timedelta
-import os, sys
-sys.path.insert(0, "/opt/airflow")
-
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.models import Variable
 
 default_args = {
     "owner": "data-engineering",
-    "retries": 2,
-    "retry_delay": timedelta(minutes=5),
+    "retries": 1,
+    "retry_delay": timedelta(minutes=2),
     "email_on_failure": False,
 }
-
-ENV = {
-    "S3_BUCKET_RAW":       "projectalphav",
-    "S3_BUCKET_PROCESSED": "projectalphav",
-    "S3_BUCKET_CURATED":   "projectalphav",
-    "S3_PREFIX_RAW":       "portfolio-raw",
-    "S3_PREFIX_PROCESSED": "portfolio-processed",
-    "S3_PREFIX_CURATED":   "portfolio-curated",
-    "MINIO_ENDPOINT":      "",
-    "AWS_DEFAULT_REGION":  "us-east-1",
-}
-
-def set_env():
-    for k, v in ENV.items():
-        os.environ[k] = v
-
-def run_bronze(**context):
-    set_env()
-    from pipeline.bronze_ingestion import run
-    result = run(run_date=context["ds"], period="5y")
-    if result["failed"]:
-        raise Exception(f"Bronze failed: {result['failed']}")
-    print(f"Bronze OK: {len(result['success'])} tickers")
-
-def run_silver(**context):
-    set_env()
-    from pipeline.silver_transform import run
-    result = run(run_date=context["ds"])
-    if result["failed"]:
-        raise Exception(f"Silver failed: {result['failed']}")
-    print(f"Silver OK: {len(result['success'])} tickers")
-
-def run_gold(**context):
-    set_env()
-    from pipeline.gold_aggregations import run
-    result = run(run_date=context["ds"])
-    print(f"Gold OK: {result.get('stats', {})}")
 
 with DAG(
     dag_id="stock_market_ingestion",
@@ -66,9 +21,22 @@ with DAG(
     tags=["equity", "bronze", "silver", "gold", "s3"],
 ) as dag:
 
-    bronze = PythonOperator(task_id="bronze_ingestion", python_callable=run_bronze)
-    silver = PythonOperator(task_id="silver_transform", python_callable=run_silver)
-    gold   = PythonOperator(task_id="gold_aggregations", python_callable=run_gold)
-    notify = BashOperator(task_id="notify_success", bash_command='echo "Pipeline done for {{ ds }}"')
+    base = """
+cd /opt/airflow && \
+export AWS_ACCESS_KEY_ID=$(airflow variables get AWS_ACCESS_KEY_ID) && \
+export AWS_SECRET_ACCESS_KEY=$(airflow variables get AWS_SECRET_ACCESS_KEY) && \
+export AWS_DEFAULT_REGION=us-east-1 && \
+export S3_BUCKET_RAW=projectalphav && \
+export S3_BUCKET_PROCESSED=projectalphav && \
+export S3_BUCKET_CURATED=projectalphav && \
+export S3_PREFIX_RAW=portfolio-raw && \
+export S3_PREFIX_PROCESSED=portfolio-processed && \
+export S3_PREFIX_CURATED=portfolio-curated && \
+"""
+
+    bronze = BashOperator(task_id="bronze_ingestion", bash_command=base + "/usr/local/bin/python /opt/airflow/pipeline/bronze_ingestion.py --date {{ ds }}")
+    silver = BashOperator(task_id="silver_transform", bash_command=base + "/usr/local/bin/python /opt/airflow/pipeline/silver_transform.py --date {{ ds }}")
+    gold   = BashOperator(task_id="gold_aggregations", bash_command=base + "/usr/local/bin/python /opt/airflow/pipeline/gold_aggregations.py --date {{ ds }}")
+    notify = BashOperator(task_id="notify_success", bash_command='echo "Pipeline completed for {{ ds }}"')
 
     bronze >> silver >> gold >> notify
