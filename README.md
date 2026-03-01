@@ -319,4 +319,5 @@ python dashboard/generate_static.py
 
 **Mauricio Esquivel**
 Data Engineer | Analytics Engineer
+
 Focus: Lakehouse Architecture, Orchestration, Cloud Data Platforms
