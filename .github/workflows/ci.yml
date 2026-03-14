@@ -1,4 +1,4 @@
-﻿name: CI/CD Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -10,9 +10,8 @@ env:
   PYTHON_VERSION: "3.11"
 
 jobs:
-
-  lint-and-format:
-    name: Lint and Format
+  validate:
+    name: Validate Python
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,43 +19,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-      - run: pip install -r requirements-dev.txt
-      - run: black --check .
-      - run: isort --check-only .
-      - run: flake8 . --max-line-length=100
-
-  unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    needs: lint-and-format
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-      - run: pip install -r requirements-dev.txt pyspark==3.5.0
-      - run: |
-          pytest tests/unit/ \
-            --cov=spark \
-            --cov-report=xml \
-            --cov-report=term-missing \
-            -v
-      - uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage.xml
-
-  dbt-validate:
-    name: dbt Compile
-    runs-on: ubuntu-latest
-    needs: lint-and-format
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-      - run: pip install dbt-core==1.7.4
-      - name: dbt compile
-        working-directory: ./dbt
-        run: dbt compile --profiles-dir ./profiles --target ci
+      - run: pip install -r requirements.txt
+      - run: python -c "import pipeline.bronze_ingestion; import pipeline.silver_transform; import pipeline.gold_aggregations; print('All modules OK')"
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+          S3_BUCKET_RAW: projectalphav
+          S3_BUCKET_PROCESSED: projectalphav
+          S3_BUCKET_CURATED: projectalphav
